@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#1a1a18" media="(prefers-color-scheme: dark)" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Income" />
+  <meta name="description" content="Track your daily income on a monthly calendar." />
+  <title>Income Tracker Pro</title>
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="apple-touch-icon" href="./icons/icon.svg" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root {
+      --color-background-primary: #ffffff;
+      --color-background-secondary: #f4f2eb;
+      --color-background-tertiary: #eceae3;
+      --color-text-primary: #1a1a18;
+      --color-text-secondary: #5f5e5a;
+      --color-text-tertiary: #888780;
+      --color-border-tertiary: rgba(0,0,0,0.12);
+      --color-border-secondary: rgba(0,0,0,0.25);
+      --color-border-primary: rgba(0,0,0,0.35);
+      --border-radius-md: 8px;
+      --border-radius-lg: 12px;
+      --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      --income-green: #1D9E75;
+      --income-green-dark: #0F6E56;
+      --danger: #E24B4A;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --color-background-primary: #1a1a18;
+        --color-background-secondary: #252522;
+        --color-background-tertiary: #2c2c2a;
+        --color-text-primary: #f0ede6;
+        --color-text-secondary: #b4b2a9;
+        --color-text-tertiary: #888780;
+        --color-border-tertiary: rgba(255,255,255,0.10);
+        --color-border-secondary: rgba(255,255,255,0.22);
+        --color-border-primary: rgba(255,255,255,0.35);
+        --income-green: #5DCAA5;
+        --income-green-dark: #1D9E75;
+      }
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; font-family: var(--font-sans); background: var(--color-background-tertiary); color: var(--color-text-primary); -webkit-font-smoothing: antialiased; }
+    body { display: flex; flex-direction: column; min-height: 100dvh; padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left); }
+
+    .app-shell { max-width: 680px; width: 100%; margin: 0 auto; padding: 1.25rem 1rem; display: flex; flex-direction: column; gap: 1.25rem; }
+    .header { display: flex; align-items: center; justify-content: space-between; }
+    .app-name { font-size: 13px; font-weight: 500; color: var(--color-text-tertiary); letter-spacing: 0.04em; text-transform: uppercase; }
+    .month-nav { display: flex; align-items: center; gap: 12px; }
+    .nav-btn { background: var(--color-background-primary); border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--color-text-primary); font-size: 16px; transition: background 0.12s; }
+    .nav-btn:hover { background: var(--color-background-secondary); }
+    .month-title { font-size: 18px; font-weight: 500; min-width: 170px; text-align: center; }
+
+    .summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .metric { background: var(--color-background-primary); border-radius: var(--border-radius-lg); border: 0.5px solid var(--color-border-tertiary); padding: 0.9rem 1rem; }
+    .metric-label { font-size: 11px; color: var(--color-text-tertiary); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .metric-value { font-size: 20px; font-weight: 500; color: var(--color-text-primary); }
+    .metric-value.green { color: var(--income-green); }
+    .metric-value.muted { font-size: 16px; color: var(--color-text-secondary); }
+
+    .calendar-wrap { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem; }
+    .weekdays { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; margin-bottom: 6px; }
+    .weekday-label { font-size: 11px; color: var(--color-text-tertiary); text-align: center; padding: 4px 0; letter-spacing: 0.03em; }
+    .calendar { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+    .day-cell { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 5px 6px; min-height: 68px; cursor: pointer; background: var(--color-background-primary); transition: border-color 0.12s, background 0.12s; overflow: hidden; }
+    .day-cell:hover { border-color: var(--color-border-primary); }
+    .day-cell.empty { background: transparent; border-color: transparent; cursor: default; pointer-events: none; }
+    .day-cell.today { border-color: var(--income-green); }
+    .day-cell.has-income { background: var(--color-background-secondary); }
+    .day-num { font-size: 11px; color: var(--color-text-tertiary); margin-bottom: 4px; }
+    .day-cell.today .day-num { font-weight: 500; color: var(--income-green); }
+    .day-income { font-size: 12px; font-weight: 500; color: var(--income-green); line-height: 1.3; }
+    .day-note { font-size: 10px; color: var(--color-text-tertiary); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Modals */
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.35); display: none; align-items: flex-end; justify-content: center; z-index: 200; padding-bottom: env(safe-area-inset-bottom); }
+    @media (min-width: 480px) { .modal-backdrop { align-items: center; } .modal { border-radius: var(--border-radius-lg) !important; } }
+    .modal { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0; padding: 1.5rem; width: 100%; max-width: 400px; }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+    .modal-title { font-size: 16px; font-weight: 500; }
+    .close-btn { background: var(--color-background-secondary); border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; color: var(--color-text-secondary); display: flex; align-items: center; justify-content: center; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { font-size: 13px; color: var(--color-text-secondary); display: block; margin-bottom: 5px; }
+    .form-group input { width: 100%; background: var(--color-background-secondary); border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); padding: 10px 12px; font-size: 16px; color: var(--color-text-primary); font-family: var(--font-sans); outline: none; }
+    .form-group input:focus { border-color: var(--income-green); }
+    .modal-actions { display: flex; gap: 8px; margin-top: 1.25rem; }
+    .btn-primary { flex: 1; background: var(--income-green); border: none; border-radius: var(--border-radius-md); padding: 11px; font-size: 15px; font-weight: 500; color: #fff; cursor: pointer; transition: background 0.12s; }
+    .btn-primary:hover { background: var(--income-green-dark); }
+    .btn-secondary { flex: 1; background: none; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); padding: 11px; font-size: 15px; color: var(--color-text-primary); cursor: pointer; }
+    .btn-secondary:hover { background: var(--color-background-secondary); }
+    .btn-danger { background: none; border: none; font-size: 13px; color: var(--color-text-tertiary); cursor: pointer; padding: 6px 12px; }
+    .btn-danger:hover { color: var(--danger); }
+    .delete-row { text-align: center; margin-top: 10px; }
+
+    /* New Features */
+    .tab-bar { position: fixed; bottom: 0; left: 0; right: 0; display: flex; background: var(--color-background-primary); border-top: 1px solid var(--color-border-tertiary); padding-bottom: env(safe-area-inset-bottom); z-index: 100; }
+    .tab { flex: 1; text-align: center; padding: 12px 0; color: var(--color-text-secondary); cursor: pointer; font-size: 11px; font-weight: 500; position: relative; }
+    .tab.active { color: var(--income-green); }
+    .tab.active::after { content: ''; position: absolute; top: -1px; left: 0; right: 0; height: 2px; background: var(--income-green); }
+
+    .view { display: none; padding-bottom: 80px; }
+    .view.active { display: block; }
+
+    .card { background: var(--color-background-primary); border-radius: var(--border-radius-lg); padding: 1rem; border: 0.5px solid var(--color-border-tertiary); }
+    .card-title { font-size: 12px; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.75rem; }
+    .week-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; border-bottom: 1px solid var(--color-background-secondary); }
+    .week-row:last-child { border-bottom: none; }
+
+    .progress-wrap { margin-top: 10px; }
+    .progress-header { display: flex; justify-content: space-between; font-size: 11px; color: var(--color-text-tertiary); margin-bottom: 4px; }
+    .progress-bar { height: 6px; background: var(--color-background-secondary); border-radius: 3px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--income-green); width: 0%; transition: width 0.3s; }
+  </style>
+</head>
+<body>
+
+  <!-- CALENDAR VIEW -->
+  <div id="view-calendar" class="view active">
+    <div class="app-shell">
+      <div class="header" style="justify-content: center;">
+        <div class="month-nav">
+          <button class="nav-btn" onclick="changeMonth(-1)">&#8592;</button>
+          <span class="month-title" id="month-title"></span>
+          <button class="nav-btn" onclick="changeMonth(1)">&#8594;</button>
+        </div>
+      </div>
+
+      <div class="summary">
+        <div class="metric" style="grid-column: span 2;">
+          <div class="metric-label">Monthly Total</div>
+          <div class="metric-value green" id="total-income">$0</div>
+          <div class="progress-wrap">
+            <div class="progress-header"><span id="goal-label">Goal</span><span id="goal-pct">0%</span></div>
+            <div class="progress-bar"><div class="progress-fill" id="goal-fill"></div></div>
+          </div>
+        </div>
+        <div class="metric" style="grid-column: span 1;">
+          <div class="metric-label">Days Logged</div>
+          <div class="metric-value muted" id="days-count">0</div>
+        </div>
+        <div class="metric" style="grid-column: span 1;">
+          <div class="metric-label">Daily Avg</div>
+          <div class="metric-value muted" id="daily-avg">—</div>
+        </div>
+      </div>
+
+      <div class="calendar-wrap">
+        <div class="weekdays">
+          <div class="weekday-label">Sun</div><div class="weekday-label">Mon</div><div class="weekday-label">Tue</div>
+          <div class="weekday-label">Wed</div><div class="weekday-label">Thu</div><div class="weekday-label">Fri</div><div class="weekday-label">Sat</div>
+        </div>
+        <div class="calendar" id="calendar"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Weekly Summary</div>
+        <div id="weekly-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- YEARLY VIEW -->
+  <div id="view-yearly" class="view">
+    <div class="app-shell">
+      <div class="header">
+        <span class="app-name">Yearly Overview</span>
+        <div class="month-nav">
+          <button class="nav-btn" onclick="changeYear(-1)">&#8592;</button>
+          <span class="month-title" id="year-title"></span>
+          <button class="nav-btn" onclick="changeYear(1)">&#8594;</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Monthly Comparison</div>
+        <canvas id="barChart"></canvas>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SETTINGS VIEW -->
+  <div id="view-settings" class="view">
+    <div class="app-shell">
+      <div class="header">
+        <span class="app-name">Settings & Tools</span>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Goal Setting</div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label>Income Goal for <span id="settings-month-label"></span></label>
+          <input type="number" id="goal-input" placeholder="e.g. 5000">
+          <button class="btn-primary" style="width:100%; margin-top:10px;" onclick="saveGoal()">Save Goal</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Data Management</div>
+        <button class="btn-secondary" style="width:100%; margin-bottom:10px;" onclick="exportCSV()">Export Data to CSV</button>
+        <button class="btn-secondary" style="width:100%; color: var(--danger);" onclick="clearData()">Clear All Data</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Notifications</div>
+        <button class="btn-secondary" style="width:100%; margin-bottom:10px;" onclick="enableNotifications()">Enable Daily Reminders</button>
+        <p style="font-size:11px; color:var(--color-text-tertiary); text-align:center;">Reminders will trigger when you open the app if you haven't logged today.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM TAB BAR -->
+  <div class="tab-bar">
+    <div class="tab active" onclick="switchTab('calendar')">Calendar</div>
+    <div class="tab" onclick="switchTab('yearly')">Yearly</div>
+    <div class="tab" onclick="switchTab('settings')">Settings</div>
+  </div>
+
+  <!-- ENTRY MODAL -->
+  <div class="modal-backdrop" id="modal" onclick="backdropClose(event)">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="modal-title"></div>
+        <button class="close-btn" onclick="closeModal()">✕</button>
+      </div>
+      <div class="form-group">
+        <label for="input-amount">Amount</label>
+        <input type="number" id="input-amount" inputmode="decimal" placeholder="0.00" step="0.01" />
+      </div>
+      <div class="form-group">
+        <label for="input-note">Note (optional)</label>
+        <input type="text" id="input-note" placeholder="e.g. Freelance, salary..." maxlength="40" />
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+        <button class="btn-primary" onclick="saveEntry()">Save</button>
+      </div>
+      <div class="delete-row">
+        <button class="btn-danger" id="delete-btn" onclick="deleteEntry()" style="display:none;">Remove entry</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  let data = {};
+  let goals = {};
+  try { 
+    data = JSON.parse(localStorage.getItem('income_data') || '{}'); 
+    goals = JSON.parse(localStorage.getItem('income_goals') || '{}');
+  } catch(e) {}
+
+  const now = new Date();
+  let currentYear = now.getFullYear();
+  let currentMonth = now.getMonth();
+  let editingKey = null;
+  let barChart = null;
+
+  function save() {
+    localStorage.setItem('income_data', JSON.stringify(data));
+    localStorage.setItem('income_goals', JSON.stringify(goals));
+  }
+  function key(y, m, d) { return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
+  function fmt(n) { return '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }); }
+
+  // ─── TABS ──────────────────────────────────────────────────────────
+  function switchTab(tabId) {
+    document.querySelectorAll('.view, .tab').forEach(el => el.classList.remove('active'));
+    document.getElementById('view-' + tabId).classList.add('active');
+    document.querySelector('.tab[onclick*="'+tabId+'"]').classList.add('active');
+
+    if(tabId === 'calendar') renderCalendar();
+    if(tabId === 'yearly') renderYearly();
+    if(tabId === 'settings') renderSettings();
+  }
+
+  // ─── CALENDAR VIEW ─────────────────────────────────────────────────
+  function renderCalendar() {
+    document.getElementById('month-title').textContent = `${MONTHS[currentMonth]} ${currentYear}`;
+    const cal = document.getElementById('calendar');
+    cal.innerHTML = '';
+
+    const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const todayStr = key(now.getFullYear(), now.getMonth(), now.getDate());
+
+    let total = 0, days = 0;
+    let weeklyTotals = {};
+
+    for (let i = 0; i < firstDay; i++) {
+      const blank = document.createElement('div');
+      blank.className = 'day-cell empty';
+      cal.appendChild(blank);
+    }
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const k = key(currentYear, currentMonth, d);
+      const entry = data[k];
+      const week = Math.ceil((d + firstDay) / 7);
+      if(!weeklyTotals[week]) weeklyTotals[week] = 0;
+
+      const cell = document.createElement('div');
+      let cls = 'day-cell';
+      if (k === todayStr) cls += ' today';
+      if (entry) { cls += ' has-income'; total += entry.amount; days++; weeklyTotals[week] += entry.amount; }
+      cell.className = cls;
+      cell.onclick = () => openModal(k, d);
+
+      const numEl = document.createElement('div');
+      numEl.className = 'day-num';
+      numEl.textContent = d;
+      cell.appendChild(numEl);
+
+      if (entry) {
+        const inc = document.createElement('div');
+        inc.className = 'day-income';
+        inc.textContent = fmt(entry.amount);
+        cell.appendChild(inc);
+        if (entry.note) {
+          const note = document.createElement('div');
+          note.className = 'day-note';
+          note.textContent = entry.note;
+          cell.appendChild(note);
+        }
+      }
+      cal.appendChild(cell);
+    }
+
+    document.getElementById('total-income').textContent = fmt(total);
+    document.getElementById('days-count').textContent = days;
+    document.getElementById('daily-avg').textContent = days > 0 ? fmt(Math.round(total / days)) : '—';
+
+    // Goal Progress
+    let mKey = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}`;
+    let goal = goals[mKey] || 0;
+    if(goal > 0) {
+      let pct = Math.min(100, (total/goal)*100);
+      document.getElementById('goal-label').textContent = `Goal: ${fmt(goal)}`;
+      document.getElementById('goal-pct').textContent = `${Math.round(pct)}%`;
+      document.getElementById('goal-fill').style.width = `${pct}%`;
+    } else {
+      document.getElementById('goal-label').textContent = 'No goal set';
+      document.getElementById('goal-pct').textContent = '';
+      document.getElementById('goal-fill').style.width = '0%';
+    }
+
+    // Weekly summary html
+    let wHtml = '';
+    Object.keys(weeklyTotals).forEach(w => {
+      wHtml += `<div class="week-row"><span style="color:var(--color-text-secondary)">Week ${w}</span><span style="font-weight:500;">${fmt(weeklyTotals[w])}</span></div>`;
+    });
+    document.getElementById('weekly-list').innerHTML = wHtml || '<div class="week-row">No data yet</div>';
+  }
+
+  function changeMonth(dir) {
+    currentMonth += dir;
+    if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+    if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+    renderCalendar();
+  }
+
+  // ─── YEARLY VIEW ───────────────────────────────────────────────────
+  function renderYearly() {
+    document.getElementById('year-title').textContent = currentYear;
+
+    let mTotals = new Array(12).fill(0);
+    Object.keys(data).forEach(k => {
+      if (k.startsWith(currentYear)) {
+        mTotals[parseInt(k.substring(5,7)) - 1] += data[k].amount;
+      }
+    });
+
+    // Charts
+    const barCtx = document.getElementById('barChart').getContext('2d');
+    if(barChart) barChart.destroy();
+    barChart = new Chart(barCtx, {
+      type: 'bar',
+      data: {
+        labels: MONTHS.map(m=>m.substring(0,3)),
+        datasets: [{ data: mTotals, backgroundColor: '#1D9E75', borderRadius: 4 }]
+      },
+      options: { responsive: true, plugins: { legend: {display: false} }, scales: { y: { beginAtZero: true } } }
+    });
+  }
+
+  function changeYear(dir) {
+    currentYear += dir;
+    renderYearly();
+  }
+
+  // ─── SETTINGS VIEW ─────────────────────────────────────────────────
+  function renderSettings() {
+    document.getElementById('settings-month-label').textContent = `${MONTHS[currentMonth]} ${currentYear}`;
+    let mKey = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}`;
+    document.getElementById('goal-input').value = goals[mKey] || '';
+  }
+
+  function saveGoal() {
+    let raw = document.getElementById('goal-input').value;
+    let amt = parseFloat(raw);
+    let mKey = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}`;
+    if(amt > 0) { goals[mKey] = amt; } else { delete goals[mKey]; }
+    save();
+    alert('Goal saved successfully!');
+  }
+
+  function exportCSV() {
+    let csv = "Date,Amount,Note\n";
+    Object.keys(data).sort().forEach(k => {
+      csv += `${k},${data[k].amount},"${(data[k].note||'').replace(/"/g, '""')}"\n`;
+    });
+    const blob = new Blob([csv], {type: 'text/csv'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `income-tracker-${now.toISOString().split('T')[0]}.csv`;
+    a.click();
+  }
+
+  function clearData() {
+    if(confirm("Are you sure you want to delete ALL data? This cannot be undone.")) {
+      data = {}; goals = {}; save(); switchTab('calendar');
+    }
+  }
+
+  function enableNotifications() {
+    if(!("Notification" in window)) { alert("This browser does not support notifications."); return; }
+    Notification.requestPermission().then(perm => {
+      alert(perm === 'granted' ? 'Daily reminders enabled!' : 'Notification permission denied.');
+    });
+  }
+
+  // ─── MODAL & ENTRIES ───────────────────────────────────────────────
+  function openModal(k, d) {
+    editingKey = k;
+    const entry = data[k];
+    const date = new Date(currentYear, currentMonth, d);
+    document.getElementById('modal-title').textContent = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    document.getElementById('input-amount').value = entry ? entry.amount : '';
+    document.getElementById('input-note').value = entry ? (entry.note || '') : '';
+    document.getElementById('delete-btn').style.display = entry ? 'inline-block' : 'none';
+    document.getElementById('modal').style.display = 'flex';
+    setTimeout(() => document.getElementById('input-amount').focus(), 100);
+  }
+
+  function backdropClose(e) { if (e.target === document.getElementById('modal')) closeModal(); }
+  function closeModal() { document.getElementById('modal').style.display = 'none'; editingKey = null; }
+
+  function saveEntry() {
+    const raw = document.getElementById('input-amount').value;
+    const amt = parseFloat(raw);
+    if (!raw || isNaN(amt) || amt < 0) { document.getElementById('input-amount').focus(); return; }
+    data[editingKey] = { amount: amt, note: document.getElementById('input-note').value.trim() };
+    save(); closeModal(); renderCalendar();
+  }
+
+  function deleteEntry() {
+    if (!editingKey) return;
+    delete data[editingKey]; save(); closeModal(); renderCalendar();
+  }
+
+  // ─── INIT ──────────────────────────────────────────────────────────
+  renderCalendar();
+
+  // Notification Check on Load
+  window.addEventListener('load', () => {
+    if ("Notification" in window && Notification.permission === 'granted') {
+      const todayStr = key(now.getFullYear(), now.getMonth(), now.getDate());
+      if (!data[todayStr] && !sessionStorage.getItem('notified_today')) {
+        new Notification('Income Tracker', { body: "Don't forget to log your income today!", icon: './icons/icon.svg' });
+        sessionStorage.setItem('notified_today', 'true');
+      }
+    }
+  });
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(err => console.error('SW reg failed', err));
+    });
+  }
+</script>
+</body>
+</html>
