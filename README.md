@@ -1,2 +1,2 @@
 # income-tracker
-Daily income tracking app
+Daily Income Tracking App
