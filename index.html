@@ -15,6 +15,8 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+
     :root {
       --color-background-primary: #ffffff;
       --color-background-secondary: #f4f2eb;
@@ -118,7 +120,491 @@
     .progress-header { display: flex; justify-content: space-between; font-size: 11px; color: var(--color-text-tertiary); margin-bottom: 4px; }
     .progress-bar { height: 6px; background: var(--color-background-secondary); border-radius: 3px; overflow: hidden; }
     .progress-fill { height: 100%; background: var(--income-green); width: 0%; transition: width 0.3s; }
-  </style>
+  
+
+/* Current design language override */
+:root {
+  --font: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f3f4f8;
+  --bg-tertiary: #eef2f7;
+  --text-primary: #111827;
+  --text-secondary: #667085;
+  --text-tertiary: #98a2b3;
+  --border-faint: rgba(17,24,39,0.08);
+  --border-mid: rgba(17,24,39,0.12);
+  --green: #8b5cf6;
+  --green-dark: #7c3aed;
+  --green-dim: rgba(139,92,246,0.10);
+  --r-md: 14px;
+  --r-lg: 20px;
+}
+body {
+  font-family: var(--font) !important;
+  background: radial-gradient(circle at top, #ffffff 0%, #f7f8fc 36%, var(--bg-tertiary) 100%) !important;
+  color: var(--text-primary) !important;
+}
+.shell, .container, .app-shell, .page {
+  max-width: 680px;
+}
+.card, .macro-tile, .shop-cat, .meal-row, .panel, .tile, .stat, .section, .workout-card, .shopping-card, .progress-card {
+  background: rgba(255,255,255,0.88) !important;
+  border: 1px solid var(--border-faint) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 8px 24px rgba(15,23,42,0.06) !important;
+  backdrop-filter: blur(10px) !important;
+}
+button, .btn, .nav-btn, .day-tab, .chip, .pill, .tab {
+  font-family: var(--font) !important;
+}
+.nav-btn, .day-tab, .chip, .pill {
+  background: rgba(255,255,255,0.92) !important;
+  border: 1px solid var(--border-mid) !important;
+  border-radius: 999px !important;
+  box-shadow: 0 6px 20px rgba(15,23,42,0.08) !important;
+}
+.nav-btn:hover, .day-tab:hover, .chip:hover, .pill:hover, button:hover {
+  background: #f3f4f8 !important;
+}
+.tab-bar, nav.bottom-nav, .bottom-nav, .tabs-bottom {
+  background: rgba(255,255,255,0.92) !important;
+  border-top: 1px solid var(--border-faint) !important;
+  box-shadow: 0 -10px 30px rgba(15,23,42,0.08) !important;
+  backdrop-filter: blur(12px) !important;
+}
+.tab {
+  color: var(--text-secondary) !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.01em !important;
+}
+.tab.active, .day-tab.active, .is-active {
+  color: var(--green) !important;
+}
+.tab.active::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  left: 24%;
+  right: 24%;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+}
+.card-title, .shop-cat-title, .label, .section-title, .eyebrow, .app-name {
+  color: var(--text-tertiary) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  font-weight: 700 !important;
+}
+.week-title, h1, h2, h3, .meal-name, .ex-name, .tip-title, .ot-title {
+  color: var(--text-primary) !important;
+  letter-spacing: -0.02em !important;
+}
+.week-title, h1, h2 {
+  font-weight: 700 !important;
+}
+.macro-value, .accent, .highlight, .value, .ex-sets {
+  color: var(--green) !important;
+  font-weight: 700 !important;
+}
+.meal-kcal, .muted, .subtle, .secondary, .caption {
+  color: var(--text-tertiary) !important;
+}
+input, select, textarea {
+  background: rgba(255,255,255,0.92) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-mid) !important;
+  border-radius: 16px !important;
+  font-family: var(--font) !important;
+}
+.primary, .btn-primary, .cta, .action {
+  background: linear-gradient(180deg, #8b5cf6 0%, #7c3aed 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 10px 24px rgba(139,92,246,0.22) !important;
+}
+.secondary-btn, .btn-secondary {
+  background: rgba(139,92,246,0.10) !important;
+  color: #7c3aed !important;
+  border: 1px solid rgba(139,92,246,0.22) !important;
+}
+.shop-item.checked {
+  opacity: 0.5 !important;
+}
+
+
+/* Section light fix */
+section, .section, .sections > *, .grid > div, .list > div, .content > div, .module, .panel, .block, .box,
+.meal-section, .workout-section, .shopping-section, .progress-section,
+[class*="section"], [class*="card"], [class*="panel"], [class*="tile"], [class*="module"] {
+  background: rgba(255,255,255,0.88) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-faint) !important;
+  box-shadow: 0 8px 24px rgba(15,23,42,0.06) !important;
+}
+
+
+/* Calendar + summary light aesthetic fix */
+.summary, .calendar-wrap, .metric, .calendar, .calendar-day, .weekdays, .month-nav {
+  color: var(--text-primary) !important;
+}
+.summary {
+  gap: 12px !important;
+}
+.metric {
+  background: rgba(255,255,255,0.92) !important;
+  border: 1px solid var(--border-faint) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 8px 24px rgba(15,23,42,0.06) !important;
+  backdrop-filter: blur(10px) !important;
+}
+.metric-label, .weekday-label {
+  color: var(--text-tertiary) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  font-weight: 700 !important;
+}
+.metric-value {
+  color: var(--text-primary) !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+}
+.metric-value.green, #total-income {
+  color: #8b5cf6 !important;
+}
+.metric-value.muted, #days-count, #daily-avg {
+  color: var(--text-primary) !important;
+}
+.progress-wrap, .progress-header, .progress-bar {
+  background: transparent !important;
+}
+.progress-bar {
+  border-radius: 999px !important;
+  overflow: hidden !important;
+  background: #eceff5 !important;
+}
+.progress-fill, #goal-fill {
+  background: linear-gradient(90deg, #8b5cf6, #a78bfa) !important;
+}
+.calendar-wrap {
+  background: rgba(255,255,255,0.92) !important;
+  border: 1px solid var(--border-faint) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 8px 24px rgba(15,23,42,0.06) !important;
+  backdrop-filter: blur(10px) !important;
+  padding: 14px !important;
+}
+.weekdays {
+  background: transparent !important;
+}
+.calendar {
+  background: transparent !important;
+}
+.calendar > div, .calendar-day {
+  background: rgba(255,255,255,0.72) !important;
+  border: 1px solid rgba(17,24,39,0.06) !important;
+  border-radius: 16px !important;
+  color: var(--text-primary) !important;
+  box-shadow: none !important;
+}
+.calendar > div.today, .calendar-day.today {
+  border-color: rgba(139,92,246,0.35) !important;
+  background: rgba(139,92,246,0.10) !important;
+}
+.calendar > div.selected, .calendar-day.selected, .calendar > div.active, .calendar-day.active {
+  background: linear-gradient(180deg, #8b5cf6 0%, #7c3aed 100%) !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+  box-shadow: 0 10px 24px rgba(139,92,246,0.20) !important;
+}
+
+
+/* Weekly Summary polish + Calendar footer fix */
+#weekly-list > div,
+#weekly-list .row,
+#weekly-list .item,
+#weekly-list li,
+#weekly-list .summary-row {
+  border-bottom: 1px solid rgba(17,24,39,0.05) !important;
+}
+#weekly-list > div:last-child,
+#weekly-list .row:last-child,
+#weekly-list .item:last-child,
+#weekly-list li:last-child,
+#weekly-list .summary-row:last-child {
+  border-bottom: none !important;
+}
+#view-calendar .card,
+#view-calendar .app-shell,
+#view-calendar,
+body {
+  background-color: transparent !important;
+}
+#view-calendar .card-title {
+  color: var(--text-primary) !important;
+  text-transform: none !important;
+  letter-spacing: -0.02em !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  margin-bottom: 0.9rem !important;
+}
+#view-calendar .card-title::after {
+  content: "";
+  display: block;
+  width: 34px;
+  height: 3px;
+  margin-top: 8px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+}
+#view-calendar .card {
+  background: rgba(255,255,255,0.92) !important;
+  border: 1px solid var(--border-faint) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 8px 24px rgba(15,23,42,0.06) !important;
+}
+#view-calendar .app-shell {
+  padding-bottom: 140px !important;
+}
+.view,
+#view-calendar {
+  min-height: 100dvh !important;
+  background: radial-gradient(circle at top, #ffffff 0%, #f7f8fc 36%, var(--bg-tertiary) 100%) !important;
+}
+
+
+/* Weekly Summary header unboxed + bottom background fix */
+#view-calendar .card-title {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+#view-calendar .card-title::after {
+  content: none !important;
+  display: none !important;
+}
+html, body {
+  background: radial-gradient(circle at top, #ffffff 0%, #f7f8fc 36%, var(--bg-tertiary) 100%) !important;
+  background-color: #eef2f7 !important;
+  min-height: 100% !important;
+}
+body::after {
+  content: "";
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 220px;
+  background: radial-gradient(circle at top, #ffffff 0%, #f7f8fc 36%, var(--bg-tertiary) 100%) !important;
+  z-index: -1;
+  pointer-events: none;
+}
+#view-calendar,
+#view-calendar .app-shell,
+#view-calendar .view,
+main,
+.app-shell {
+  background: transparent !important;
+}
+
+
+/* Header cleanup: remove boxed look and center all headers */
+.card-title,
+.section-title,
+.app-name,
+.month-title,
+.week-title,
+.metric-label,
+.shop-cat-title,
+.header-title,
+.title,
+h1, h2, h3 {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  padding: 0 !important;
+  text-align: center !important;
+  justify-content: center !important;
+  align-items: center !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+.header,
+.month-nav,
+.title-row {
+  align-items: center !important;
+}
+.card-title::before,
+.card-title::after,
+.section-title::before,
+.section-title::after,
+.app-name::before,
+.app-name::after,
+.month-title::before,
+.month-title::after,
+.week-title::before,
+.week-title::after,
+.metric-label::before,
+.metric-label::after,
+.shop-cat-title::before,
+.shop-cat-title::after,
+.header-title::before,
+.header-title::after,
+.title::before,
+.title::after,
+h1::before, h1::after,
+h2::before, h2::after,
+h3::before, h3::after {
+  content: none !important;
+  display: none !important;
+}
+
+
+/* Center metric values + upgrade calendar input modal */
+.metric-value,
+#total-income,
+#days-count,
+#daily-avg {
+  text-align: center !important;
+  justify-content: center !important;
+  align-items: center !important;
+  width: 100% !important;
+}
+.modal {
+  background: rgba(255,255,255,0.96) !important;
+  border: 1px solid rgba(17,24,39,0.08) !important;
+  border-radius: 24px 24px 0 0 !important;
+  box-shadow: 0 20px 60px rgba(15,23,42,0.14) !important;
+  backdrop-filter: blur(12px) !important;
+}
+@media (min-width: 480px) {
+  .modal {
+    border-radius: 24px !important;
+  }
+}
+.modal-header {
+  margin-bottom: 1.25rem !important;
+  align-items: center !important;
+}
+.modal-title {
+  font-family: var(--font) !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+  color: var(--text-primary) !important;
+}
+.close-btn {
+  background: rgba(255,255,255,0.9) !important;
+  border: 1px solid rgba(17,24,39,0.08) !important;
+  border-radius: 999px !important;
+  width: 34px !important;
+  height: 34px !important;
+  box-shadow: 0 6px 18px rgba(15,23,42,0.06) !important;
+}
+.form-group label {
+  color: var(--text-tertiary) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  margin-bottom: 8px !important;
+}
+.form-group input {
+  width: 100% !important;
+  background: rgba(255,255,255,0.9) !important;
+  border: 1px solid rgba(17,24,39,0.10) !important;
+  border-radius: 18px !important;
+  padding: 14px 16px !important;
+  font-size: 16px !important;
+  color: var(--text-primary) !important;
+  font-family: var(--font) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.8) !important;
+}
+.form-group input::placeholder {
+  color: var(--text-tertiary) !important;
+}
+.form-group input:focus {
+  border-color: rgba(139,92,246,0.35) !important;
+  box-shadow: 0 0 0 4px rgba(139,92,246,0.10) !important;
+  outline: none !important;
+}
+.btn-primary {
+  background: linear-gradient(180deg, #8b5cf6 0%, #7c3aed 100%) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 16px !important;
+  box-shadow: 0 10px 24px rgba(139,92,246,0.22) !important;
+  font-weight: 700 !important;
+}
+.btn-secondary {
+  background: rgba(255,255,255,0.78) !important;
+  border: 1px solid rgba(17,24,39,0.08) !important;
+  border-radius: 16px !important;
+  color: var(--text-primary) !important;
+  font-weight: 600 !important;
+}
+.modal-backdrop {
+  background: rgba(15,23,42,0.18) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+
+/* Full-page seamless gradient fix */
+:root {
+  --page-gradient: linear-gradient(180deg, #f8f9fd 0%, #f2f4f9 38%, #eef2f7 100%);
+}
+html,
+body {
+  margin: 0 !important;
+  min-height: 100% !important;
+  background: var(--page-gradient) !important;
+  background-color: #eef2f7 !important;
+}
+body {
+  min-height: 100dvh !important;
+}
+body::before,
+body::after,
+html::before,
+html::after,
+#view-calendar::before,
+#view-calendar::after,
+#view-calendar.active::before,
+#view-calendar.active::after {
+  content: none !important;
+  display: none !important;
+}
+.view,
+.view.active,
+#view-calendar,
+#view-calendar.active,
+#view-calendar .app-shell,
+#view-yearly,
+#view-settings,
+main,
+.app-shell {
+  background: transparent !important;
+}
+#view-calendar,
+#view-calendar.active {
+  min-height: calc(100dvh - 0px) !important;
+}
+#view-calendar .app-shell {
+  min-height: calc(100dvh - 0px) !important;
+  padding-bottom: calc(140px + env(safe-area-inset-bottom)) !important;
+  box-sizing: border-box !important;
+}
+.tab-bar,
+nav.bottom-nav,
+.bottom-nav,
+.tabs-bottom {
+  background: rgba(255,255,255,0.94) !important;
+}
+
+</style>
 </head>
 <body>
 
